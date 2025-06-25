@@ -1,21 +1,24 @@
-const { 
-  ChannelType, 
-  ActionRowBuilder, 
-  ButtonBuilder, 
-  ButtonStyle, 
-  EmbedBuilder, 
-  StringSelectMenuBuilder, 
-  StringSelectMenuOptionBuilder 
+const {
+  ChannelType,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder
 } = require('discord.js');
 
 const config = require('../config');
+const { getNextTicketId } = require('./idTracker');
+const { setTicketCreator } = require('./ticketStorage');
 
 async function createTicketThread(interaction) {
   const { guild, user, channel } = interaction;
 
   await interaction.deferReply({ flags: 64 });
 
-  const threadName = `ticket-${user.username}-${user.discriminator}`;
+  const ticketId = getNextTicketId();
+  const threadName = `Ticket-${ticketId}`;
 
   const ticketThread = await channel.threads.create({
     name: threadName,
@@ -23,21 +26,25 @@ async function createTicketThread(interaction) {
     reason: `Ticket created by ${user.tag}`,
   });
 
-  const allowedRoles = config.defaultSupportRoles;
-  const allowedMembers = allowedRoles
-    .map(roleId => guild.roles.cache.get(roleId))
-    .filter(role => role);
-
+  // Legg til oppretter
   await ticketThread.members.add(user.id);
-  for (const role of allowedMembers) {
-    await ticketThread.send({ content: `<@&${role.id}>` });
+  setTicketCreator(ticketThread.id, user.id);
+
+  // Legg til kun defaultSupportRoles
+  const fetchedMembers = await guild.members.fetch();
+  const supportMembers = fetchedMembers.filter(member =>
+    member.roles.cache.some(role => config.defaultSupportRoles.includes(role.id))
+  );
+
+  for (const [memberId] of supportMembers) {
+    await ticketThread.members.add(memberId).catch(() => {});
   }
 
   const embed = new EmbedBuilder()
     .setTitle('🎟️ Ticket created')
     .setDescription(`Hello ${user}, please describe what you need help with.\nThe support team has been notified.`)
     .setColor(0x2f3136)
-    .setFooter({ text: 'Legacy DEV Team | LDT Support' });
+    .setFooter({ text: `Legacy DEV Team | Ticket ID: ${ticketId}` });
 
   const buttons = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('claim_ticket').setLabel('Claim').setStyle(ButtonStyle.Success),
@@ -46,8 +53,7 @@ async function createTicketThread(interaction) {
   );
 
   await ticketThread.send({ embeds: [embed], components: [buttons] });
-
-  await interaction.editReply({ content: `✅ Your ticket has been created: ${ticketThread}` });
+  await interaction.editReply({ content: `✅ Your ticket has been created: ${threadName}` });
 
   if (config.ticketLogChannelId) {
     const logChannel = guild.channels.cache.get(config.ticketLogChannelId);
@@ -78,31 +84,69 @@ async function sendEscalateMenu(interaction) {
 }
 
 async function escalateTicketThread(interaction, selectedRoleId) {
-  const thread = interaction.channel;
-  const role = interaction.guild.roles.cache.get(selectedRoleId);
+  await interaction.deferUpdate();
 
-  if (!role) {
-    await interaction.reply({ content: '❌ Role not found.', flags: 64 });
+  const thread = await interaction.channel.fetch(true);
+  await thread.setArchived(false, 'Escalation requires open thread');
+  await thread.members.add(interaction.client.user.id).catch(() => {});
+
+  const guild = interaction.guild;
+  const promoteRoles = config.promoteRoles;
+  const selectedIndex = promoteRoles.indexOf(selectedRoleId);
+
+  if (selectedIndex === -1) {
+    await thread.send({ content: '❌ Invalid escalation role selected.' });
     return;
   }
 
-  try {
-    if (thread.archived) {
-      await thread.setArchived(false, 'Reopened for escalation');
+  const threadMembers = await thread.members.fetch();
+  const threadMemberIds = threadMembers.map(m => m.user.id);
+
+  let currentIndex = -1;
+  for (let i = 0; i < promoteRoles.length; i++) {
+    const role = guild.roles.cache.get(promoteRoles[i]);
+    if (role && role.members.some(member => threadMemberIds.includes(member.id))) {
+      currentIndex = i;
+      break;
+    }
+  }
+
+  if (currentIndex >= selectedIndex) {
+    await thread.send({
+      content: `⚠️ Escalation to the same or lower level is not allowed.`
+    });
+    return;
+  }
+
+  const lowerRoles = promoteRoles.slice(0, selectedIndex);
+  for (const roleId of lowerRoles) {
+    const role = guild.roles.cache.get(roleId);
+    if (!role) continue;
+
+    for (const [memberId] of role.members) {
+      await thread.members.remove(memberId).catch(() => {});
+    }
+  }
+
+  const promoteRole = guild.roles.cache.get(selectedRoleId);
+  if (promoteRole) {
+    for (const [memberId] of promoteRole.members) {
+      await thread.members.add(memberId).catch(() => {});
     }
 
-    const membersWithRole = role.members;
+    const embed = new EmbedBuilder()
+      .setTitle('📈 Ticket Escalated')
+      .setDescription(`Ticket escalated by ${interaction.user} to **${promoteRole.name}**.`)
+      .setColor(0x3498db)
+      .setTimestamp()
+      .setFooter({ text: 'Legacy DEV Team | Escalation Log' });
 
-    for (const [memberId] of membersWithRole) {
-      await thread.members.add(memberId);
-    }
-
-    await thread.send(`📈 Ticket escalated to <@&${role.id}> by ${interaction.user}.`);
-    await interaction.reply({ content: `✅ Ticket successfully escalated to ${role.name}.`, flags: 64 });
-
-  } catch (error) {
-    console.error('Failed to escalate ticket:', error);
-    await interaction.reply({ content: '❌ Failed to escalate ticket.', flags: 64 });
+    await thread.send({
+      content: `<@&${promoteRole.id}>`,
+      embeds: [embed]
+    });
+  } else {
+    await thread.send({ content: '❌ Could not resolve selected role.' });
   }
 }
 

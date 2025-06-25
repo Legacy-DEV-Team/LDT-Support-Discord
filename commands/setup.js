@@ -1,31 +1,33 @@
-const { 
+const {
   SlashCommandBuilder,
-  PermissionFlagsBits,
   ChannelType,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
-  MessageFlags
+  EmbedBuilder
 } = require('discord.js');
 
-module.exports = { 
+const config = require('../config');
+
+module.exports = {
   data: new SlashCommandBuilder()
     .setName('setup')
-    .setDescription('Initializing LDT Support system in this channel.')
-    .addSubcommand(sub =>
-      sub
-        .setName('ldtsupport')
-        .setDescription('Sets up ticket system with button in this channel.')
-    )
-    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
+    .setDescription('Initialize the ticket system in this channel.'),
 
   async execute(interaction) {
-    if (!interaction.isChatInputCommand()) return;
+    const isBotOwner = interaction.user.id === config.ownerId;
+    const isGuildOwner = interaction.guild.ownerId === interaction.user.id;
+
+    if (!isBotOwner && !isGuildOwner) {
+      return await interaction.reply({
+        content: '❌ Only the server owner or bot owner can run this command.',
+        flags: 64
+      });
+    }
 
     const embed = new EmbedBuilder()
       .setTitle('🆘 LDT Support')
-      .setDescription('Click the button below to create a ticket.\nOur team will help you as soon as possible.')
+      .setDescription('Click the button below to create a ticket.\nOur team will assist you shortly.')
       .setColor(0x2f3136)
       .setFooter({ text: 'Legacy DEV Team | LDT Support' });
 
@@ -37,8 +39,8 @@ module.exports = {
     );
 
     await interaction.reply({
-      content: '✅ Setup complete!',
-      flags: MessageFlags.Ephemeral
+      content: '✅ Ticket system has been set up in this channel.',
+      flags: 64
     });
 
     await interaction.channel.send({ embeds: [embed], components: [row] });

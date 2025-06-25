@@ -1,35 +1,35 @@
-module.exports = {
-  // Discord
-  token: "YOUR_DISCORD_BOT_TOKEN",
-  clientId: "YOUR_DISCORD_CLIENT_ID",
-  guildId: "YOUR_DISCORD_GUILD_ID",
+module.exports = { 
+  // Discord 
+  token: "DISCORD_BOT_TOKEN_ID",
+  clientId: "DISCORD_BOT_CLIENT_ID",
+  guildId: "DISCORD_SERVER_ID",
+  ownerId: "DISCORD_SERVER_OWNER_ID",
 
-  // Roller (bruk Discord rolle-ID’er)
-  defaultSupportRoles: [
-    "123456789012345678", // f.eks. Support
-    "223456789012345678"  // f.eks. Trainee
-  ],
+  // Roles (use Discord role IDs) 
+  defaultSupportRoles: [ 
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID"  // Support 
+  ], 
 
-  claimRoles: [
-    "123456789012345678",
-    "323456789012345678"
-  ],
+  claimRoles: [ 
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID", // Support 
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"  // Developer
+  ], 
 
-  promoteRoles: [
-    "323456789012345678",
-    "423456789012345678"
-  ],
+  promoteRoles: [ 
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID", // Support 
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"  // Developer
+  ], 
 
-  closeRoles: [
-    "323456789012345678",
-    "423456789012345678"
-  ],
+  closeRoles: [ 
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID", // Support 
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"  // Developer
+  ], 
 
-  reopenRoles: [
-    "123456789012345678",
-    "423456789012345678"
-  ],
+  reopenRoles: [ 
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID", // Support 
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"  // Developer
+  ], 
 
-  // Valgfri kanal-ID for ticket-logging
-  ticketLogChannelId: "567890123456789012"
+  // Optional channel ID for ticket logging 
+  ticketLogChannelId: "DISCORD_SERVER_LOG_CHANNEL_ID"
 };
