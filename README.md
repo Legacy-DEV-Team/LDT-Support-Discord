@@ -2,48 +2,88 @@
 
 **Developed by Legacy DEV Team**
 
-LDT Support is a Discord bot for streamlined ticket management using button interactions and thread-based ticket handling.
+LDT Support is a Discord bot for structured and secure ticket management. It utilizes threads, role-restricted actions, and button-only interaction for a clean and professional support workflow.
 
 ---
 
 ## 🚀 Features
-- No user commands, all interactions via buttons.
-- Support roles and permissions configured through a single file.
-- Thread-based ticket handling, allowing clean and organized support.
-- Easy setup with a single slash command.
+
+- 🧩 **Zero user commands** – everything runs via buttons and one setup slash command.
+- 🧵 **Private thread per ticket** – scoped to support staff and the ticket creator.
+- 🔐 **Automatic lock and archive on close**.
+- 🔓 **Role- or creator-controlled reopen support**.
+- 📈 **Escalation system** with role-tier logic.
+- ⚙️ **Fully configurable** via `config.js`.
 
 ---
 
 ## ⚙️ Configuration
-Edit `config.js` with your Discord bot credentials, role IDs, and optional logging channel.
 
-**Never commit sensitive tokens publicly!**
+Edit the `config.js` file with your own values:
+
+```js
+module.exports = {
+  // Discord bot credentials
+  token: "DISCORD_BOT_TOKEN_ID",
+  clientId: "DISCORD_BOT_CLIENT_ID",
+  guildId: "DISCORD_SERVER_ID",
+  ownerId: "DISCORD_SERVER_OWNER_ID",
+
+  // Role-based access control
+  defaultSupportRoles: [
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID" // e.g., Support
+  ],
+
+  claimRoles: [
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID", // e.g., Support
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"  // e.g., Developer
+  ],
+
+  promoteRoles: [
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID",
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"
+  ],
+
+  closeRoles: [
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID",
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"
+  ],
+
+  reopenRoles: [
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID",
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"
+  ],
+
+  // Optional logging
+  ticketLogChannelId: "DISCORD_SERVER_LOG_CHANNEL_ID"
+};
+````
+
+> 🔒 **Never commit your bot token or sensitive IDs publicly.**
 
 ---
 
 ## 📦 Installation
 
-Clone repository:
+Clone the repository and install dependencies:
+
 ```bash
 git clone <repo-url>
 cd ldt-support-discord
-````
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
 ---
 
-## 🛠️ Deploy Commands
+## 🛠️ Deploy Slash Commands
 
-Run this command once to deploy the slash commands:
+Before using the bot, you must register the slash command in your guild:
 
 ```bash
 npm run deploy
 ```
+
+This will register `/setup tickets` as your setup command.
 
 ---
 
@@ -55,12 +95,66 @@ Start the bot:
 npm start
 ```
 
-Setup the bot:
+Then run the setup slash command in a chosen support channel:
 
 ```bash
-/setup ldtsupport
+/setup tickets
 ```
 
 ---
 
-**Developed by Legacy DEV Team**
+## ✅ Ticket Workflow
+
+1. 🎟️ **User clicks “Create Ticket”** – a private thread is opened.
+2. 👥 **Support Tier 1 role** + the user are added.
+3. ✅ **Support can**:
+
+   * Claim the ticket
+   * Escalate to higher tiers
+   * Close (locks + archives the thread)
+4. 🔁 **Support or creator can reopen**, depending on `reopenRoles`.
+
+---
+
+## 🛡️ Access Control Overview
+
+| Action        | Role Required                   |
+| ------------- | ------------------------------- |
+| Create ticket | Anyone (button)                 |
+| Claim ticket  | `claimRoles`                    |
+| Escalate      | `promoteRoles`                  |
+| Close ticket  | `closeRoles` or Ticket Creator  |
+| Reopen ticket | `reopenRoles` or Ticket Creator |
+
+---
+
+## 📄 Template Role Setup Example
+
+```js
+defaultSupportRoles: ["1198729689276092498"], // Support
+claimRoles: ["1198729689276092498", "1033955057001050194"],
+promoteRoles: ["1198729689276092498", "1033955057001050194"],
+closeRoles: ["1198729689276092498", "1033955057001050194"],
+reopenRoles: ["1198729689276092498", "1033955057001050194"]
+```
+
+---
+
+## 🧪 Status
+
+* ✅ Discord.js v14+ compatible
+* ✅ Built-in role security & fallback logic
+* ✅ Button-based UX only (no user slash commands)
+* ✅ Locked thread enforcement
+* ✅ Fully local and self-hosted
+
+---
+
+## 👥 Maintained by
+
+**Legacy DEV Team**
+For questions, issues, or contributions, contact the maintainers or fork this project.
+
+---
+
+**© 2025 Legacy DEV Team — All rights reserved**
