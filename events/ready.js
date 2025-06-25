@@ -1,7 +1,10 @@
-module.exports = { 
-name: 'ready', 
-once: true, 
-execute(client) { 
-console.log(` ✅ LDT Support is logged in as ${client.user.tag}`); 
-}
+module.exports = {
+  name: 'ready',
+  once: true,
+  execute(client) {
+    console.log('════════════════════════════════════════');
+    console.log(` ✅ LDT Support is online as ${client.user.tag}`);
+    console.log(` 📡 Connected to ${client.guilds.cache.size} server(s)`);
+    console.log('════════════════════════════════════════');
+  }
 };
