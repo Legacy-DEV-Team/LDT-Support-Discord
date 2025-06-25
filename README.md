@@ -8,11 +8,12 @@ LDT Support is a Discord bot for structured and secure ticket management. It uti
 
 ## 🚀 Features
 
-- 🧩 **Zero user commands** – everything runs via buttons and one setup slash command.
+- 🧩 **Zero user commands** – everything runs via buttons and slash setup/admin commands.
 - 🧵 **Private thread per ticket** – scoped to support staff and the ticket creator.
 - 🔐 **Automatic lock and archive on close**.
 - 🔓 **Role- or creator-controlled reopen support**.
 - 📈 **Escalation system** with role-tier logic.
+- 🗑️ **Clear logging with `/clearlog` command (owner only)**.
 - ⚙️ **Fully configurable** via `config.js`.
 
 ---
@@ -35,8 +36,8 @@ module.exports = {
   ],
 
   claimRoles: [
-    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID", // e.g., Support
-    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"  // e.g., Developer
+    "DISCORD_SERVER_SUPPORT_TIER_1_ROLE_ID",
+    "DISCORD_SERVER_SUPPORT_TIER_2_ROLE_ID"
   ],
 
   promoteRoles: [
@@ -68,8 +69,8 @@ module.exports = {
 Clone the repository and install dependencies:
 
 ```bash
-git clone <repo-url>
-cd ldt-support-discord
+git clone https://github.com/Legacy-DEV-Team/LDT-Support-Discord
+cd LDT-Support-Discord
 npm install
 ```
 
@@ -77,13 +78,13 @@ npm install
 
 ## 🛠️ Deploy Slash Commands
 
-Before using the bot, you must register the slash command in your guild:
+Before using the bot, you must register slash commands in your guild:
 
 ```bash
 npm run deploy
 ```
 
-This will register `/setup tickets` as your setup command.
+This registers both `/setup`, `/clearcache` and `/clearlog`.
 
 ---
 
@@ -95,10 +96,10 @@ Start the bot:
 npm start
 ```
 
-Then run the setup slash command in a chosen support channel:
+Then run the setup command in the desired support channel:
 
 ```bash
-/setup tickets
+/setup
 ```
 
 ---
@@ -116,6 +117,20 @@ Then run the setup slash command in a chosen support channel:
 
 ---
 
+## 🗑️ Admin Commands
+
+| Command        | Description                                                             | Access         |
+|----------------|-------------------------------------------------------------------------|----------------|
+| `/setup`       | Initializes the ticket system in the current channel                    | Only `ownerId` |
+| `/clearlog`    | Deletes all messages from the ticket log channel (≤ 14 days old)        | Only `ownerId` |
+| `/clearcache`  | Clears in-memory ticket/user cache (resets tracking if stored in RAM)   | Only `ownerId` |
+
+These commands are **restricted to the server owner** as defined in your `config.js` under `ownerId`.  
+Use `/setup` in each support category/channel where you want the "Create Ticket" button to appear.
+
+
+---
+
 ## 🛡️ Access Control Overview
 
 | Action        | Role Required                   |
@@ -125,6 +140,7 @@ Then run the setup slash command in a chosen support channel:
 | Escalate      | `promoteRoles`                  |
 | Close ticket  | `closeRoles` or Ticket Creator  |
 | Reopen ticket | `reopenRoles` or Ticket Creator |
+| Clear log     | `ownerId` only                  |
 
 ---
 
@@ -144,8 +160,8 @@ reopenRoles: ["1198729689276092498", "1033955057001050194"]
 
 * ✅ Discord.js v14+ compatible
 * ✅ Built-in role security & fallback logic
-* ✅ Button-based UX only (no user slash commands)
 * ✅ Locked thread enforcement
+* ✅ Owner-only admin tools
 * ✅ Fully local and self-hosted
 
 ---

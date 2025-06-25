@@ -1,15 +1,20 @@
 const { REST, Routes } = require('discord.js');
-const config = require('./config');
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
 const commands = [];
 const commandsPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
+// Samle alle kommando-dataene
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
-  commands.push(command.data.toJSON());
+  if ('data' in command && 'execute' in command) {
+    commands.push(command.data.toJSON());
+  } else {
+    console.warn(`⚠️ Command file '${file}' is missing required 'data' or 'execute' export.`);
+  }
 }
 
 const rest = new REST({ version: '10' }).setToken(config.token);
@@ -23,9 +28,8 @@ const rest = new REST({ version: '10' }).setToken(config.token);
       { body: commands }
     );
 
-    console.log('\x1b[32m%s\x1b[0m', '✅ Slash command(s) registered successfully.');
+    console.log('✅ Slash commands successfully registered.');
   } catch (error) {
-    console.error('\x1b[31m%s\x1b[0m', '❌ Failed to register commands:');
-    console.error(error);
+    console.error('❌ Failed to register slash commands:', error);
   }
 })();
