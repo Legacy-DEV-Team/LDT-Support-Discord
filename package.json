@@ -1,0 +1,15 @@
+{
+  "name": "ldt-support",
+  "version": "1.0.0",
+  "description": "Discord ticket bot developed by Legacy DEV Team",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "author": "Legacy DEV Team",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.1"
+  }
+}
