@@ -1,3 +1,5 @@
 node_modules/
 config.js
 package-lock.json
+utils/ticket-data.json
+utils/ticketCounter.json
